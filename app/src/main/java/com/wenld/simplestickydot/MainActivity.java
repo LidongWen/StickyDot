@@ -9,7 +9,6 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.zhy.adapter.recyclerview.CommonAdapter;
-import com.zhy.adapter.recyclerview.MultiItemTypeAdapter;
 import com.zhy.adapter.recyclerview.base.ViewHolder;
 
 import java.util.ArrayList;
@@ -27,9 +26,8 @@ public class MainActivity extends AppCompatActivity {
 //        getActionBar().setTitle("自定义View");
         list.add(new ItemClass(" 自定义小红点_1", Activity_Version_1.class));
         list.add(new ItemClass(" WindowManager_1", Activity_windows.class));
-        list.add(new ItemClass(" WindowManager_封装", null));
-        list.add(new ItemClass(" 红点__WindowManager_整合", null));
-        list.add(new ItemClass(" （优化）最终版", null));
+        list.add(new ItemClass(" 组合封装使用__1", Activity_Version_2.class));
+        list.add(new ItemClass(" 在列表中的使用", Activity_version_3.class));
 
         this.rlvAtyFilter = (RecyclerView) findViewById(R.id.rlv_activity_main);
 
@@ -49,21 +47,11 @@ public class MainActivity extends AppCompatActivity {
                         }
                     }
                 });
+                holder.getView(R.id.tv_activity_windows).setVisibility(View.GONE);
             }
         };
         rlvAtyFilter.setLayoutManager(new LinearLayoutManager(this));
         rlvAtyFilter.setAdapter(adapter);
-        adapter.setOnItemClickListener(new MultiItemTypeAdapter.OnItemClickListener<String>() {
-            @Override
-            public void onItemClick(View view, RecyclerView.ViewHolder holder, String o, int position) {
-
-            }
-
-            @Override
-            public boolean onItemLongClick(View view, RecyclerView.ViewHolder holder, String o, int position) {
-                return false;
-            }
-        });
     }
 
     public class ItemClass {

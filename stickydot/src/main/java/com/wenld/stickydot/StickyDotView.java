@@ -1,4 +1,4 @@
-package com.wenld.simplestickydot.view;
+package com.wenld.stickydot;
 
 import android.animation.Animator;
 import android.animation.ValueAnimator;
@@ -12,9 +12,7 @@ import android.graphics.Region;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.animation.DecelerateInterpolator;
 
-import com.wenld.customviewsupport.DensityUtils;
 
 /**
  * <p/>
@@ -30,7 +28,7 @@ import com.wenld.customviewsupport.DensityUtils;
  * 5、拖拽半径不超过阈值松手，出现弹效果
  */
 
-public class StickyDots_001 extends View {
+public class StickyDotView extends View {
     private String TAG = "StickyDots";
 
     /**
@@ -104,12 +102,21 @@ public class StickyDots_001 extends View {
 
     Paint paint;
     Path pathBezier;
+    private int mStatusBarHeight;
 
-    public StickyDots_001(Context context) {
+    StickyAnimUtil stickyAnimUtil;
+
+    public void setDragStickViewListener(DragStickViewListener dragStickViewListener) {
+        this.dragStickViewListener = dragStickViewListener;
+    }
+
+    private DragStickViewListener dragStickViewListener;
+
+    public StickyDotView(Context context) {
         this(context, null);
     }
 
-    public StickyDots_001(Context context, AttributeSet attrs) {
+    public StickyDotView(Context context, AttributeSet attrs) {
         super(context, attrs);
         initValue();
     }
@@ -117,7 +124,7 @@ public class StickyDots_001 extends View {
 
     public void initValue() {
         paint = new Paint();
-        paint.setColor(Color.RED);
+        paint.setColor(Color.parseColor("#F36A09"));
         paint.setAntiAlias(true);
 
         pathBezier = new Path();
@@ -129,21 +136,17 @@ public class StickyDots_001 extends View {
         mFarthestDistance = DensityUtils.dip2px(getContext(), 80);
 
         mDragRadius = DensityUtils.dip2px(getContext(), 8);
-        pointFDragCenter = new PointF(touchX, touchY);
+        pointFDragCenter = new PointF();
 
-    }
+        pointfFixCenter = new PointF();
 
-    @Override
-    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-        pointfFixCenter = new PointF(getWidth()/2, getHeight());
-        //初始化时 固定圆的可触摸范围
-        regionCircle = new Region((int) (pointfFixCenter.x - mMaxFixRadius), (int) (pointfFixCenter.y - mMaxFixRadius), (int) (pointfFixCenter.x + mMaxFixRadius), (int) (pointfFixCenter.y + mMaxFixRadius));
+        stickyAnimUtil = new StickyAnimUtil(animatorUpdateListener, animatorListener);
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
         canvas.save();
+        canvas.translate(0, -mStatusBarHeight);
         if (!isOutUp) {
             if (!isOut) {
                 //画固定圆
@@ -154,48 +157,40 @@ public class StickyDots_001 extends View {
                     //画贝塞尔曲线
                     pathBezier.reset();
                     pathBezier.moveTo(pointfsFixTangent[0].x, pointfsFixTangent[0].y);
-                    pathBezier.quadTo(pointControl.x, pointControl.y,
-                            pointFsDragTangent[0].x, pointFsDragTangent[0].y);
-                    //            从上一个点绘制一条直线到下面这个位置
+                    pathBezier.quadTo(pointControl.x, pointControl.y, pointFsDragTangent[0].x, pointFsDragTangent[0].y);
                     pathBezier.lineTo(pointFsDragTangent[1].x, pointFsDragTangent[1].y);
-                    //            再绘制一条二阶贝塞尔曲线
-                    pathBezier.quadTo(pointControl.x, pointControl.y,
-                            pointfsFixTangent[1].x, pointfsFixTangent[1].y);
-//            执行close，表示形成闭合路径
+                    pathBezier.quadTo(pointControl.x, pointControl.y, pointfsFixTangent[1].x, pointfsFixTangent[1].y);
                     pathBezier.close();
                     canvas.drawPath(pathBezier, paint);
                 }
                 //画拖拽圆
-                canvas.drawCircle(pointFDragCenter.x, pointFDragCenter.y, mDragRadius, paint);
+//                canvas.drawCircle(pointFDragCenter.x, pointFDragCenter.y, mDragRadius, paint);
             }
         }
         canvas.restore();
     }
 
-    float touchX;
-    float touchY;
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        if (isOutUp || animatorRebound != null && animatorRebound.isRunning())
+        if (stickyAnimUtil.isRunning())
             return true;
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN: {
-                touchX = event.getX();
-                touchY = event.getY();
-                // 判断是否点在圆内
-                if (regionCircle.contains((int) touchX, (int) touchY)) {
-                    isTouch = true;
-                    processData(touchX, touchY);
-                    invalidate();
-                }
+                isTouch = true;
+                processData(event.getRawX(), event.getRawY());
+                invalidate();
+                if (dragStickViewListener != null)
+                    dragStickViewListener.inRangeMove(pointFDragCenter);
                 break;
             }
 
             case MotionEvent.ACTION_MOVE: {
                 if (isTouch) {
-                    processData(event.getX(), event.getY());
+                    processData(event.getRawX(), event.getRawY());
                     invalidate();
+                    if (dragStickViewListener != null)
+                        dragStickViewListener.inRangeMove(pointFDragCenter);
                 }
                 break;
             }
@@ -203,7 +198,6 @@ public class StickyDots_001 extends View {
             case MotionEvent.ACTION_UP: {
                 if (isTouch) {
                     if (!isOut) {
-                        //一直没有
                         inUp();
                     } else {
                         outUp();
@@ -224,15 +218,14 @@ public class StickyDots_001 extends View {
      * 计算拖拽的距离、固定圆的半径、是否出了最大拖拽范围、控制点位置 、 计算几个切点的位置
      */
     private void processData(float touchX, float touchY) {
-        if (!isTouch)
-            return;
         pointFDragCenter.x = touchX;
         pointFDragCenter.y = touchY;
 
+//        GraphicsUtil.process(pointFDragCenter, pointfFixCenter,dx,dy,mDraglength,cosA, sinA);
         //计算拖拽的距离
         dx = touchX - pointfFixCenter.x;
         dy = touchY - pointfFixCenter.y;
-        mDraglength = (float) Math.sqrt((dx * dx) + (dy * dy));
+        mDraglength = (float) Math.sqrt(Math.pow(dx, 2.0D) + Math.pow((double) dy, 2.0D));
         cosA = dx / mDraglength;
         sinA = dy / mDraglength;
 
@@ -262,59 +255,15 @@ public class StickyDots_001 extends View {
 
         //控制点位置
         pointControl.set(pointfFixCenter.x + dx / 2, pointfFixCenter.y + dy / 2);
-
     }
 
-    //回弹动画
-    ValueAnimator animatorRebound;
-
     private void inUp() {
-        if (animatorRebound == null)
-            animatorRebound = ValueAnimator.ofFloat(1f, -0.3f, 0.1f, 0.05f, 0);
-        if (animatorRebound.isRunning())
-            return;
-        animatorRebound.setDuration(1000);
-        animatorRebound.setInterpolator(new DecelerateInterpolator(2.0f));
-        animatorRebound.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-                float currentValue = (float) animation.getAnimatedValue();
-
-                pointFDragCenter.x = pointfFixCenter.x + dx * currentValue;
-                pointFDragCenter.y = pointfFixCenter.y + dy * currentValue;
-                processFixRadius(Math.abs(mDraglength * currentValue));
-                if (currentValue >= 0) {
-                    processTangent(cosA, sinA);
-                } else {
-                    processTangent(-cosA, -sinA);
-                }
-                invalidate();
-            }
-        });
-        animatorRebound.addListener(new Animator.AnimatorListener() {
-            @Override
-            public void onAnimationStart(Animator animation) {
-
-            }
-
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                resetValue();
-                invalidate();
-            }
-
-            @Override
-            public void onAnimationCancel(Animator animation) {
-
-            }
-
-            @Override
-            public void onAnimationRepeat(Animator animation) {
-
-            }
-        });
-        animatorRebound.start();
+        if (stickyAnimUtil != null) {
+            stickyAnimUtil.palyAnim();
+        } else {
+            resetValue();
+            invalidate();
+        }
     }
 
 
@@ -322,11 +271,61 @@ public class StickyDots_001 extends View {
         if (mDraglength >= mFarthestDistance) {
             isOutUp = true;
             invalidate();
+            if (dragStickViewListener != null)
+                dragStickViewListener.outRangeUp(pointFDragCenter);
         } else {
             resetValue();
             invalidate();
+            if (dragStickViewListener != null)
+                dragStickViewListener.inRangeUp(pointFDragCenter);
         }
     }
+
+
+    ValueAnimator.AnimatorUpdateListener animatorUpdateListener = new ValueAnimator.AnimatorUpdateListener() {
+
+        @Override
+        public void onAnimationUpdate(ValueAnimator animation) {
+            float currentValue = (float) animation.getAnimatedValue();
+
+            pointFDragCenter.x = pointfFixCenter.x + dx * currentValue;
+            pointFDragCenter.y = pointfFixCenter.y + dy * currentValue;
+            processFixRadius(Math.abs(mDraglength * currentValue));
+            if (currentValue >= 0) {
+                processTangent(cosA, sinA);
+            } else {
+                processTangent(-cosA, -sinA);
+            }
+            invalidate();
+
+            if (dragStickViewListener != null)
+                dragStickViewListener.inRangeMove(pointFDragCenter);
+        }
+    };
+    Animator.AnimatorListener animatorListener = new Animator.AnimatorListener() {
+        @Override
+        public void onAnimationStart(Animator animation) {
+
+        }
+
+        @Override
+        public void onAnimationEnd(Animator animation) {
+            resetValue();
+            invalidate();
+            if (dragStickViewListener != null)
+                dragStickViewListener.inRangeUp(pointFDragCenter);
+        }
+
+        @Override
+        public void onAnimationCancel(Animator animation) {
+
+        }
+
+        @Override
+        public void onAnimationRepeat(Animator animation) {
+
+        }
+    };
 
     /**
      * 重置为初始状态的数据
@@ -336,5 +335,28 @@ public class StickyDots_001 extends View {
         isTouch = false;
         isOut = false;
         isOutUp = false;
+    }
+
+    public void setCenterPoint(float x, float y) {
+        pointfFixCenter.set(x, y);
+        //初始化时 固定圆的可触摸范围
+        regionCircle = new Region((int) (pointfFixCenter.x - mMaxFixRadius), (int) (pointfFixCenter.y - mMaxFixRadius), (int) (pointfFixCenter.x + mMaxFixRadius), (int) (pointfFixCenter.y + mMaxFixRadius));
+    }
+
+    /**
+     * 设置状态栏高度，最好外面传进来，当view还没有绑定到窗体的时候是测量不到的
+     *
+     * @param mStatusBarHeight
+     */
+    public void setStatusBarHeight(int mStatusBarHeight) {
+        this.mStatusBarHeight = mStatusBarHeight;
+    }
+
+    public void setmFarthestDistance(float mFarthestDistance) {
+        this.mFarthestDistance =DensityUtils.dip2px(getContext(), 80); ;
+    }
+
+    public void setPaintColor(int color) {
+        paint.setColor(color);
     }
 }

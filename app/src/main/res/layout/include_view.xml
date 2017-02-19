@@ -4,7 +4,7 @@
     android:id="@+id/tv_activity_windows"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:padding="@dimen/value_5"
     android:layout_centerInParent="true"
     android:background="@color/colorAccent"
+    android:textColor="#FFFFFF"
     android:text="hello!" />

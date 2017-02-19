@@ -25,7 +25,7 @@ public class onWindowView extends View {
 
     private int mDragViewHeight;
     private int mDragViewWidth;
-    private int mStatusBarHeight;
+    private int mStatusBarHeight=0;
 
     private DragStickViewListener dragStickViewListener;
 
@@ -92,8 +92,8 @@ public class onWindowView extends View {
     public void setPointF(int x, int y) {
         pointF.set(x, y);
 
-        mParams.x = (int) (x - mDragViewWidth);
-        mParams.y = (int) (y - mDragViewHeight - mStatusBarHeight);
+        mParams.x = (x - mDragViewWidth);
+        mParams.y = (y - mDragViewHeight - mStatusBarHeight);
         try {
             mWm.updateViewLayout(mDragView, mParams);
         } catch (Exception e) {
@@ -104,32 +104,43 @@ public class onWindowView extends View {
     /**
      * 拖拽过程监听接口
      */
-    public interface DragStickViewListener { /**
-     * 在范围内移动回调
-     * @param dragCanterPoint 拖拽的中心坐标
-     */
-    void inRangeMove(PointF dragCanterPoint);
+    public interface DragStickViewListener {
+        /**
+         * 在范围内移动回调
+         *
+         * @param dragCanterPoint 拖拽的中心坐标
+         */
+        void inRangeMove(PointF dragCanterPoint);
+
         /**
          * 在范围外移动回调
+         *
          * @param dragCanterPoint 拖拽的中心坐标
          */
         void outRangeMove(PointF dragCanterPoint);
+
         /**
-         *  当移出了规定范围，最后在范围内松手的回调
+         * 当移出了规定范围，最后在范围内松手的回调
+         *
          * @param dragCanterPoint
          */
         void out2InRangeUp(PointF dragCanterPoint);
+
         /**
          * 当移出了规定范围，最后在范围外松手的回调
+         *
          * @param dragCanterPoint
          */
         void outRangeUp(PointF dragCanterPoint);
+
         /**
          * 一直没有移动出范围，在范围内松手的回调
+         *
          * @param dragCanterPoint
          */
         void inRangeUp(PointF dragCanterPoint);
     }
+
     public DragStickViewListener getDragStickViewListener() {
         return dragStickViewListener;
     }

@@ -1,11 +1,11 @@
 package com.wenld.simplestickydot;
 
-import android.app.Activity;
 import android.content.Context;
-import android.graphics.PixelFormat;
 import android.graphics.PointF;
 import android.os.Bundle;
 import android.support.v4.view.MotionEventCompat;
+import android.support.v7.app.AppCompatActivity;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -23,7 +23,7 @@ import com.wenld.simplestickydot.view.onWindowView;
  * github: https://github.com/LidongWen
  */
 
-public class Activity_windows extends Activity {
+public class Activity_windows extends AppCompatActivity {
     private TextView tv_activity_windows;
 
     onWindowView mStickyView;
@@ -50,7 +50,9 @@ public class Activity_windows extends Activity {
         mDragView = LayoutInflater.from(this).inflate(R.layout.include_view, null, false);
         mStickyView = new onWindowView(this, mDragView, mWm);
         mParams = new WindowManager.LayoutParams();
-        mParams.format = PixelFormat.TRANSLUCENT;
+        mParams.height =300;
+        mParams.width = 300;
+        mParams.gravity = Gravity.TOP | Gravity.LEFT;
     }
 
     private void listener() {
