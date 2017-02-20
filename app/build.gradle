@@ -31,6 +31,6 @@ dependencies {
 
     compile 'com.github.LidongWen:AdapterValue:1.0.0'
     compile 'com.github.LidongWen:commonTools:1.2.1'
-    compile 'com.github.LidongWen:StickyDot:1.0.0'
-//    compile project(':stickydot')
+//    compile 'com.github.LidongWen:StickyDot:1.0.0'
+    compile project(':stickydot')
 }

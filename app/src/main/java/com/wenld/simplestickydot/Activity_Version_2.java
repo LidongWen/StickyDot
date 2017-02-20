@@ -1,6 +1,5 @@
 package com.wenld.simplestickydot;
 
-import android.graphics.Color;
 import android.graphics.PointF;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -39,7 +38,7 @@ public class Activity_Version_2 extends AppCompatActivity {
         TextView mDragView = (TextView) LayoutInflater.from(this).inflate(R.layout.include_view, null, false);
         hepler = new StickyDotHepler(this, tv_activity_windows, mDragView)
                 .setMaxDragDistance(DensityUtils.dip2px(this, 200))
-                .setColor(Color.parseColor("#94D5EE"))
+//                .setColor(Color.parseColor("#94D5EE"))
 //                .setDraged(false)  //设置是否可以被拖拽
                 .setOutListener(new StickyDotHepler.StickyListener() {
                     @Override
