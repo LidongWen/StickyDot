@@ -64,7 +64,7 @@ public class StickyDotHepler implements View.OnTouchListener {
         if (paramsStickyView == null) {
             paramsStickyView = new WindowManager.LayoutParams();
             paramsStickyView.format = PixelFormat.TRANSLUCENT;
-            paramsStickyView.type = WindowManager.LayoutParams.TYPE_TOAST;
+//            paramsStickyView.type = WindowManager.LayoutParams.TYPE_PHONE;
         }
         if (paramsDragView == null) {
             paramsDragView = new WindowManager.LayoutParams();
@@ -72,7 +72,7 @@ public class StickyDotHepler implements View.OnTouchListener {
             paramsDragView.height = WindowManager.LayoutParams.WRAP_CONTENT;
             paramsDragView.width = WindowManager.LayoutParams.WRAP_CONTENT;
             paramsDragView.gravity = Gravity.TOP | Gravity.LEFT;
-            paramsDragView.type = WindowManager.LayoutParams.TYPE_TOAST;
+//            paramsDragView.type = WindowManager.LayoutParams.TYPE_PHONE;
         }
     }
 
