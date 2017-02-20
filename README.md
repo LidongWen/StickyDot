@@ -1,7 +1,7 @@
 # StickyDot
-qq 红点取消控件
+仿QQ取消控件。拖拽效果，爆炸效果。 酷炫的、人性化的效果。
 
-<img width="320" height="500" src="https://github.com/LidongWen/SimpleStickyDot/blob/master/art/stickyDot.gif"></img>
+![](art/stickyDot.gif)
 
 ## 引用
 ```groovy

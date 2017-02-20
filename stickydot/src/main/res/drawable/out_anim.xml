@@ -4,18 +4,18 @@
 
     <item
         android:drawable="@mipmap/pop1"
-        android:duration="50"/>
+        android:duration="80"/>
     <item
         android:drawable="@mipmap/pop2"
-        android:duration="50"/>
+        android:duration="80"/>
     <item
         android:drawable="@mipmap/pop3"
-        android:duration="50"/>
+        android:duration="80"/>
     <item
         android:drawable="@mipmap/pop4"
-        android:duration="50"/>
+        android:duration="80"/>
     <item
         android:drawable="@mipmap/pop5"
-        android:duration="50"/>
+        android:duration="80"/>
 
 </animation-list>
