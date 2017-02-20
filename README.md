@@ -1,7 +1,7 @@
-# StickyDots
+# StickyDot
 qq 红点取消控件
 
-<img width="320" height="500" src="https://github.com/LidongWen/SimpleStickyDot/blob/master/art/stickyDot.gif"></img>![](img/stickyDot.gif)
+<img width="320" height="500" src="https://github.com/LidongWen/SimpleStickyDot/blob/master/art/stickyDot.gif"></img>
 
 ## 引用
 ```groovy
