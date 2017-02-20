@@ -353,7 +353,7 @@ public class StickyDotView extends View {
     }
 
     public void setmFarthestDistance(float mFarthestDistance) {
-        this.mFarthestDistance =DensityUtils.dip2px(getContext(), 80); ;
+        this.mFarthestDistance = mFarthestDistance;
     }
 
     public void setPaintColor(int color) {
