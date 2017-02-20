@@ -13,6 +13,7 @@
     <Button
         android:id="@+id/btn_close"
         android:layout_width="match_parent"
+        android:text="点击取消"
         android:layout_marginTop="@dimen/value_50"
         android:layout_height="@dimen/value_50" />
 </RelativeLayout>

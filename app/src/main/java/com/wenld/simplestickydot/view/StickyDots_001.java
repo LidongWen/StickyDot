@@ -136,7 +136,7 @@ public class StickyDots_001 extends View {
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-        pointfFixCenter = new PointF(getWidth()/2, getHeight());
+        pointfFixCenter = new PointF(getWidth()/2, getHeight()/2);
         //初始化时 固定圆的可触摸范围
         regionCircle = new Region((int) (pointfFixCenter.x - mMaxFixRadius), (int) (pointfFixCenter.y - mMaxFixRadius), (int) (pointfFixCenter.x + mMaxFixRadius), (int) (pointfFixCenter.y + mMaxFixRadius));
     }

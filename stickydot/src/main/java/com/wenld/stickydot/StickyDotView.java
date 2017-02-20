@@ -124,7 +124,7 @@ public class StickyDotView extends View {
 
     public void initValue() {
         paint = new Paint();
-        paint.setColor(Color.parseColor("#F36A09"));
+        paint.setColor(Color.parseColor("#FF4081"));
         paint.setAntiAlias(true);
 
         pathBezier = new Path();

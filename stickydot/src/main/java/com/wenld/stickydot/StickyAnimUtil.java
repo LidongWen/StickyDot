@@ -29,7 +29,7 @@ public class StickyAnimUtil {
         if (animatorListener == null)
             return;
         if (animatorRebound == null) {
-            animatorRebound = ValueAnimator.ofFloat(1f, -0.3f, 0.1f, 0.05f, 0);
+            animatorRebound = ValueAnimator.ofFloat(1f, -0.4f, 0.2f, -0.1f, 0);
             animatorRebound.setDuration(300);
             animatorRebound.setInterpolator(new DecelerateInterpolator(2.0f));
             animatorRebound.addUpdateListener(animatorUpdateListener);

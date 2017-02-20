@@ -16,6 +16,7 @@ import com.zhy.adapter.recyclerview.CommonAdapter;
 import com.zhy.adapter.recyclerview.base.ViewHolder;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -27,14 +28,37 @@ public class Activity_version_3 extends AppCompatActivity {
     CommonAdapter adapter;
     List<ItemClass> list = new ArrayList<>();
 
+    HashMap<Integer, StickyDotHepler> map = new HashMap<>();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-//        getActionBar().setTitle("自定义View");
         initData();
 
         this.rlvAtyFilter = (RecyclerView) findViewById(R.id.rlv_activity_main);
+        TextView tv_activity_windows = (TextView) findViewById(R.id.tv_activity_windows);
+
+        StickyDotHepler hepler = new StickyDotHepler(this, tv_activity_windows, R.layout.include_view)
+                .setMaxDragDistance(DensityUtils.dip2px(Activity_version_3.this, 100))
+                .setOutListener(new StickyDotHepler.StickyListener() {
+                    @Override
+                    public void outRangeUp(PointF dragCanterPoint) {
+                        RecyclerView.LayoutManager layoutManager = rlvAtyFilter.getLayoutManager();
+                        if (layoutManager instanceof LinearLayoutManager) {
+                            LinearLayoutManager linearManager = (LinearLayoutManager) layoutManager;
+                            int lastItemPosition = linearManager.findLastVisibleItemPosition();
+                            int firstItemPosition = linearManager.findFirstVisibleItemPosition();
+                            StickyDotHepler hepler;
+                            for (int i = firstItemPosition; i <= lastItemPosition; i++) {
+                                hepler = map.get(i);
+                                if (hepler != null)
+                                    hepler.dismiss();
+                            }
+                        }
+                    }
+                });
+
 
         adapter = new CommonAdapter<ItemClass>(this, R.layout.list_items, list) {
             @Override
@@ -42,36 +66,39 @@ public class Activity_version_3 extends AppCompatActivity {
                 TextView btn = holder.getView(R.id.btn);
                 btn.setText(s.name);
                 TextView tv_activity_windows = holder.getView(R.id.tv_activity_windows);
-                tv_activity_windows.setText("50");
-
                 TextView mDragView = (TextView) LayoutInflater.from(mContext).inflate(R.layout.include_view, null, false);
-                mDragView.setText("50");
 
                 if (s.b) {
-                    tv_activity_windows.setBackgroundColor(Color.parseColor("#F36A09"));
-                    StickyDotHepler hepler = new StickyDotHepler(Activity_version_3.this, tv_activity_windows, mDragView)
-                            .setMaxDragDistance(DensityUtils.dip2px(Activity_version_3.this, 100))
-//                            .setColor(Color.parseColor("#94D5EE"))
-//                .setDraged(false)  //设置是否可以被拖拽
-                            .setOutListener(new StickyDotHepler.StickyListener() {
-                                @Override
-                                public void outRangeUp(PointF dragCanterPoint) {
-                                    Toast.makeText(Activity_version_3.this, "第  " + position + " 个", Toast.LENGTH_LONG).show();
-                                }
-                            });
+                    StickyDotHepler hepler = map.get(position);
+                    if (hepler == null) {
+                        hepler = new StickyDotHepler(Activity_version_3.this, tv_activity_windows, mDragView)
+                                .setMaxDragDistance(DensityUtils.dip2px(Activity_version_3.this, 100))
+                                .setOutListener(new StickyDotHepler.StickyListener() {
+                                    @Override
+                                    public void outRangeUp(PointF dragCanterPoint) {
+                                        Toast.makeText(Activity_version_3.this, "第  " + position + " 个", Toast.LENGTH_LONG).show();
+                                        map.remove(position);
+                                    }
+                                });
+                        map.put(position, hepler);
+                    }
                 } else {
                     tv_activity_windows.setBackgroundColor(Color.parseColor("#94D5EE"));
                     mDragView.setBackgroundColor(Color.parseColor("#94D5EE"));
-                    StickyDotHepler hepler = new StickyDotHepler(Activity_version_3.this, tv_activity_windows, mDragView)
-                            .setMaxDragDistance(DensityUtils.dip2px(Activity_version_3.this, 100))
-                            .setColor(Color.parseColor("#94D5EE"))
-//                .setDraged(false)  //设置是否可以被拖拽
-                            .setOutListener(new StickyDotHepler.StickyListener() {
-                                @Override
-                                public void outRangeUp(PointF dragCanterPoint) {
-                                    Toast.makeText(Activity_version_3.this, "第  " + position + " 个", Toast.LENGTH_LONG).show();
-                                }
-                            });
+                    StickyDotHepler hepler = map.get(position);
+                    if (hepler == null) {
+                        hepler = new StickyDotHepler(Activity_version_3.this, tv_activity_windows, mDragView)
+                                .setMaxDragDistance(DensityUtils.dip2px(Activity_version_3.this, 100))
+                                .setColor(Color.parseColor("#94D5EE"))
+                                .setOutListener(new StickyDotHepler.StickyListener() {
+                                    @Override
+                                    public void outRangeUp(PointF dragCanterPoint) {
+                                        Toast.makeText(Activity_version_3.this, "第  " + position + " 个", Toast.LENGTH_LONG).show();
+                                        map.remove(position);
+                                    }
+                                });
+                        map.put(position, hepler);
+                    }
                 }
 
             }

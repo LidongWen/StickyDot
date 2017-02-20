@@ -26,7 +26,7 @@ public class StickyDotHepler implements View.OnTouchListener {
     private View mDragView;
     private int dragViewLayoutID;
 
-    private WindowManager mWm;
+    private WindowManager mWs;
     private WindowManager.LayoutParams paramsStickyView;
     private WindowManager.LayoutParams paramsDragView;
 
@@ -56,7 +56,7 @@ public class StickyDotHepler implements View.OnTouchListener {
 
         mShowView.setOnTouchListener(this);
 
-        mWm = (WindowManager) mContext.getSystemService(Context.WINDOW_SERVICE);
+        mWs = (WindowManager) mContext.getSystemService(Context.WINDOW_SERVICE);
         mStickyView = new StickyDotView(mContext);
 
         if (mStatusBarHeight == 0)
@@ -64,6 +64,7 @@ public class StickyDotHepler implements View.OnTouchListener {
         if (paramsStickyView == null) {
             paramsStickyView = new WindowManager.LayoutParams();
             paramsStickyView.format = PixelFormat.TRANSLUCENT;
+            paramsStickyView.type = WindowManager.LayoutParams.TYPE_TOAST;
         }
         if (paramsDragView == null) {
             paramsDragView = new WindowManager.LayoutParams();
@@ -71,6 +72,7 @@ public class StickyDotHepler implements View.OnTouchListener {
             paramsDragView.height = WindowManager.LayoutParams.WRAP_CONTENT;
             paramsDragView.width = WindowManager.LayoutParams.WRAP_CONTENT;
             paramsDragView.gravity = Gravity.TOP | Gravity.LEFT;
+            paramsDragView.type = WindowManager.LayoutParams.TYPE_TOAST;
         }
     }
 
@@ -109,8 +111,8 @@ public class StickyDotHepler implements View.OnTouchListener {
             mShowView.setVisibility(View.GONE);
             //          开始添加的窗体让其显示
 
-            mWm.addView(mStickyView, paramsStickyView);
-            mWm.addView(mDragView, paramsDragView);
+            mWs.addView(mStickyView, paramsStickyView);
+            mWs.addView(mDragView, paramsDragView);
             mDragView.measure(1, 1);
             mDragViewHeight = mDragView.getMeasuredHeight() / 2;
             mDragViewWidth = mDragView.getMeasuredWidth() / 2;
@@ -136,7 +138,7 @@ public class StickyDotHepler implements View.OnTouchListener {
             paramsDragView.x = (int) (dragCanterPoint.x - mDragViewWidth);
             paramsDragView.y = (int) (dragCanterPoint.y - mDragViewHeight - mStatusBarHeight);
             try {
-                mWm.updateViewLayout(mDragView, paramsDragView);
+                mWs.updateViewLayout(mDragView, paramsDragView);
             } catch (Exception e) {
 
             }
@@ -144,9 +146,9 @@ public class StickyDotHepler implements View.OnTouchListener {
 
         @Override
         public void outRangeUp(PointF dragCanterPoint) {
-            if (mWm != null && mStickyView.getParent() != null && mDragView.getParent() != null) {
-                mWm.removeView(mStickyView);
-                mWm.removeView(mDragView);
+            if (mWs != null && mStickyView.getParent() != null && mDragView.getParent() != null) {
+                mWs.removeView(mStickyView);
+                mWs.removeView(mDragView);
             }
             //做其他的事情
             playAnim(dragCanterPoint);
@@ -154,9 +156,9 @@ public class StickyDotHepler implements View.OnTouchListener {
 
         @Override
         public void inRangeUp(PointF dragCanterPoint) {
-            if (mWm != null && mStickyView.getParent() != null && mDragView.getParent() != null) {
-                mWm.removeView(mStickyView);
-                mWm.removeView(mDragView);
+            if (mWs != null && mStickyView.getParent() != null && mDragView.getParent() != null) {
+                mWs.removeView(mStickyView);
+                mWs.removeView(mDragView);
             }
             mShowView.setVisibility(View.VISIBLE);
         }
@@ -190,7 +192,7 @@ public class StickyDotHepler implements View.OnTouchListener {
 //      获取播放一次帧动画的总时长
         long duration = getAnimDuration(mAnimDrawable);
 
-        mWm.addView(imageView, paramsDragView);
+        mWs.addView(imageView, paramsDragView);
         mAnimDrawable.start();
 //        由于帧动画不能定时停止，只能采用这种办法
         imageView.postDelayed(new Runnable() {
@@ -198,7 +200,7 @@ public class StickyDotHepler implements View.OnTouchListener {
             public void run() {
                 mAnimDrawable.stop();
                 imageView.clearAnimation();
-                mWm.removeView(imageView);
+                mWs.removeView(imageView);
                 if (outListener != null)
                     outListener.outRangeUp(dragCanterPoint);
 //                if (viewOutRangeUpRun != null) {

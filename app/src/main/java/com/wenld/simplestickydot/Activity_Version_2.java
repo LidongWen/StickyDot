@@ -35,7 +35,6 @@ public class Activity_Version_2 extends AppCompatActivity {
 
     private void initView() {
         tv_activity_windows = (TextView) findViewById(R.id.tv_activity_windows);
-        tv_activity_windows.setText("ok!");
         btn_close = (Button) findViewById(R.id.btn_close);
         TextView mDragView = (TextView) LayoutInflater.from(this).inflate(R.layout.include_view, null, false);
         hepler = new StickyDotHepler(this, tv_activity_windows, mDragView)
