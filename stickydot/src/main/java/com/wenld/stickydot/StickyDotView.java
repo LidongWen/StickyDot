@@ -8,7 +8,6 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PointF;
-import android.graphics.Region;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
@@ -23,9 +22,12 @@ import android.view.View;
  * 动画分析：
  * 1、由三部分组成  固定圆、拖拽圆、中间填充部分
  * 2、拖拽得越远 固定圆越小
- * 3、拖拽半径超过一个阈值时 固定圆消失
- * 4、拖拽半径超过一个阈值时松手，显示一个爆炸效果
- * 5、拖拽半径不超过阈值松手，出现弹效果
+ * 3、拖拽半径曾有超过一个阈值时 固定圆、贝塞尔区间消失
+ * 4、松手：松手时拖拽半径超过阈值，显示一个爆炸效果
+ * 5、松手：松手时拖拽半径不超过阈值 且 拖拽半径未曾超过阈值，出现弹效果
+ * 6、松手：松手时拖拽半径不超过阈值 且 拖拽半径有曾超过阈值，还原位置
+ *
+ *
  */
 
 public class StickyDotView extends View {
@@ -84,21 +86,12 @@ public class StickyDotView extends View {
      * 超出范围
      */
     private boolean isOut;
-
-    /**
-     * 在超出范围的地方松手
-     */
     private boolean isOutUp;
-
     /**
      * 是否touch
      */
     private boolean isTouch;
 
-    /**
-     * 固定圆初始化时的范围
-     */
-    Region regionCircle;
 
     Paint paint;
     Path pathBezier;
@@ -147,25 +140,23 @@ public class StickyDotView extends View {
     protected void onDraw(Canvas canvas) {
         canvas.save();
         canvas.translate(0, -mStatusBarHeight);
-        if (!isOutUp) {
+        if (isTouch) {
             if (!isOut) {
                 //画固定圆
                 canvas.drawCircle(pointfFixCenter.x, pointfFixCenter.y, mFixRadius, paint);
+                //画贝塞尔曲线
+                pathBezier.reset();
+                pathBezier.moveTo(pointfsFixTangent[0].x, pointfsFixTangent[0].y);
+                pathBezier.quadTo(pointControl.x, pointControl.y, pointFsDragTangent[0].x, pointFsDragTangent[0].y);
+                pathBezier.lineTo(pointFsDragTangent[1].x, pointFsDragTangent[1].y);
+                pathBezier.quadTo(pointControl.x, pointControl.y, pointfsFixTangent[1].x, pointfsFixTangent[1].y);
+                pathBezier.close();
+                canvas.drawPath(pathBezier, paint);
             }
-            if (isTouch) {
-                if (!isOut) {
-                    //画贝塞尔曲线
-                    pathBezier.reset();
-                    pathBezier.moveTo(pointfsFixTangent[0].x, pointfsFixTangent[0].y);
-                    pathBezier.quadTo(pointControl.x, pointControl.y, pointFsDragTangent[0].x, pointFsDragTangent[0].y);
-                    pathBezier.lineTo(pointFsDragTangent[1].x, pointFsDragTangent[1].y);
-                    pathBezier.quadTo(pointControl.x, pointControl.y, pointfsFixTangent[1].x, pointfsFixTangent[1].y);
-                    pathBezier.close();
-                    canvas.drawPath(pathBezier, paint);
-                }
-                //画拖拽圆
+        }
+        if (!isOutUp) {
+            //画拖拽圆
 //                canvas.drawCircle(pointFDragCenter.x, pointFDragCenter.y, mDragRadius, paint);
-            }
         }
         canvas.restore();
     }
@@ -197,11 +188,8 @@ public class StickyDotView extends View {
 
             case MotionEvent.ACTION_UP: {
                 if (isTouch) {
-                    if (!isOut) {
-                        inUp();
-                    } else {
-                        outUp();
-                    }
+                    isTouch = false;
+                    Up();
                 }
                 break;
             }
@@ -257,27 +245,23 @@ public class StickyDotView extends View {
         pointControl.set(pointfFixCenter.x + dx / 2, pointfFixCenter.y + dy / 2);
     }
 
-    private void inUp() {
-        if (stickyAnimUtil != null) {
-            stickyAnimUtil.palyAnim();
-        } else {
-            resetValue();
-            invalidate();
-        }
-    }
-
-
-    private void outUp() {
+    private void Up() {
         if (mDraglength >= mFarthestDistance) {
             isOutUp = true;
             invalidate();
             if (dragStickViewListener != null)
                 dragStickViewListener.outRangeUp(pointFDragCenter);
         } else {
-            resetValue();
-            invalidate();
-            if (dragStickViewListener != null)
-                dragStickViewListener.inRangeUp(pointFDragCenter);
+            if (!isOut) {
+                if (stickyAnimUtil != null) {
+                    stickyAnimUtil.palyAnim();
+                }
+            } else {
+                resetValue();
+                invalidate();
+                if (dragStickViewListener != null)
+                    dragStickViewListener.inRangeUp(pointFDragCenter);
+            }
         }
     }
 
@@ -290,12 +274,12 @@ public class StickyDotView extends View {
 
             pointFDragCenter.x = pointfFixCenter.x + dx * currentValue;
             pointFDragCenter.y = pointfFixCenter.y + dy * currentValue;
-            processFixRadius(Math.abs(mDraglength * currentValue));
-            if (currentValue >= 0) {
-                processTangent(cosA, sinA);
-            } else {
-                processTangent(-cosA, -sinA);
-            }
+//            processFixRadius(Math.abs(mDraglength * currentValue));
+//            if (currentValue >= 0) {
+//                processTangent(cosA, sinA);
+//            } else {
+//                processTangent(-cosA, -sinA);
+//            }
             invalidate();
 
             if (dragStickViewListener != null)
@@ -339,8 +323,8 @@ public class StickyDotView extends View {
 
     public void setCenterPoint(float x, float y) {
         pointfFixCenter.set(x, y);
-        //初始化时 固定圆的可触摸范围
-        regionCircle = new Region((int) (pointfFixCenter.x - mMaxFixRadius), (int) (pointfFixCenter.y - mMaxFixRadius), (int) (pointfFixCenter.x + mMaxFixRadius), (int) (pointfFixCenter.y + mMaxFixRadius));
+//        //初始化时 固定圆的可触摸范围
+//        regionCircle = new Region((int) (pointfFixCenter.x - mMaxFixRadius), (int) (pointfFixCenter.y - mMaxFixRadius), (int) (pointfFixCenter.x + mMaxFixRadius), (int) (pointfFixCenter.y + mMaxFixRadius));
     }
 
     /**

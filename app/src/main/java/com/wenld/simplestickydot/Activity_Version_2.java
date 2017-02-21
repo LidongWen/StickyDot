@@ -9,7 +9,6 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.wenld.stickydot.DensityUtils;
 import com.wenld.stickydot.StickyDotHepler;
 
 /**
@@ -37,7 +36,7 @@ public class Activity_Version_2 extends AppCompatActivity {
         btn_close = (Button) findViewById(R.id.btn_close);
         TextView mDragView = (TextView) LayoutInflater.from(this).inflate(R.layout.include_view, null, false);
         hepler = new StickyDotHepler(this, tv_activity_windows, mDragView)
-                .setMaxDragDistance(DensityUtils.dip2px(this, 200))
+//                .setMaxDragDistance(DensityUtils.dip2px(this, 200))
 //                .setColor(Color.parseColor("#94D5EE"))
 //                .setDraged(false)  //设置是否可以被拖拽
                 .setOutListener(new StickyDotHepler.StickyListener() {
