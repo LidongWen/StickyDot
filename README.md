@@ -8,7 +8,7 @@
 ```groovy
 // 项目引用
 dependencies {
-    compile 'com.github.LidongWen:stickyDot:1.1.0'
+     compile 'com.github.LidongWen:StickyDot:1.1.0'
 }
 
 // 根目录下引用
